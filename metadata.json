@@ -1,0 +1,5 @@
+{
+  "name": "六年級中文",
+  "description": "An interactive fill-in-the-blank vocabulary quiz application for 6th-grade students, powered by Gemini AI to generate context-aware questions based on specific vocabulary lists.",
+  "requestFramePermissions": []
+}
