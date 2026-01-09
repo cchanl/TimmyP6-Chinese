@@ -1,9 +1,9 @@
 
 export const WORD_LISTS = [
   {
-    id: 'grade6_default',
-    name: '上學期22課',
-    description: '縱身、逃命、莊稼等常用語詞',
+    id: 'grade6_tech_modern',
+    name: '上學期22常用詞',
+    description: '"縱身", "逃命", "莊稼"',
     words: [
       "縱身", "逃命", "莊稼", "災場", "骨折", "關頭", 
       "鄉親", "奮不顧身", "反應", "倒塌", "設法", "畢竟", 
@@ -11,27 +11,26 @@ export const WORD_LISTS = [
     ]
   },
   {
-    id: 'emotions',
-    name: '下學期7課',
-    description: '靈感、迷信、脚踏實地、天賦...',
+    id: 'grade6_default',
+    name: '下學期7常用詞',
+    description: '靈感,迷信,脚踏實地等常用語詞',
     words: [
-      "靈感","迷信","脚踏實地","天賦","自恃","平庸",
+       "靈感","迷信","脚踏實地","天賦","自恃","平庸",
       "持之以恆","精湛","刷新","澆灌","告誡",
-      "領悟","潛質","惋惜","實踐","傷殘","缺陷","歷程"
-    ]
+      "領悟","潛質","惋惜","實踐","傷殘","缺陷","歷程"         ]
   },
-   {
+  {
     id: 'emotions',
     name: '成語6',
-    description: '萬念俱灰、樂不思蜀、驚惶失措、好高騖遠、虎頭蛇尾...',
+    description: '肆無忌憚 墨守成規...',
     words: [
       "肆無忌憚", "墨守成規", "廢寢忘食", "興風作浪", "鍥而不捨"
     ]
   },
- {
-    id: 'nature',
-    name: '成語4-6',
-    description: '肆無忌憚、墨守成規、廢寢忘食、興風作浪、鍥而不捨...',
+  {
+    id: 'idioms_nature',
+    name: '成語精選',
+    description: '肆無忌憚、墨守成規、萬念俱灰...',
     words: [
       "七竅生烟", "不寒而慄", "如坐針氈", "耿耿於懷", "庸人自擾",
       "萬念俱灰", "樂不思蜀", "驚惶失措", "好高騖遠", "虎頭蛇尾",
@@ -40,5 +39,5 @@ export const WORD_LISTS = [
   }
 ];
 
-export const APP_TITLE = "語文詞語運用測驗";
+export const APP_TITLE = "六年級語文詞語運用測驗";
 export const APP_SUBTITLE = "我是你的AI語文老師，選擇詞彙表或自訂題目，來挑戰看看你的詞彙運用能力吧！";
