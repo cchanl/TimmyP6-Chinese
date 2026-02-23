@@ -10,10 +10,27 @@ export interface QuizConfig {
   questionCount: number;
 }
 
+export interface QuizResult {
+  id: string;
+  date: string;
+  score: number;
+  total: number;
+  wordListId: string;
+  wordListName: string;
+}
+
+export interface MasteryStats {
+  wordListId: string;
+  attempts: number;
+  bestScore: number;
+  averageScore: number;
+}
+
 export enum GameState {
   IDLE = 'IDLE',
   LOADING = 'LOADING',
   PLAYING = 'PLAYING',
   REVIEW = 'REVIEW',
   ERROR = 'ERROR',
+  PROGRESS = 'PROGRESS',
 }

@@ -1,11 +1,15 @@
 import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import Header from './components/Header';
 import QuestionList from './components/QuestionList';
 import WordBank from './components/WordBank';
 import { generateQuizQuestions } from './services/geminiService';
+import { saveQuizResult } from './services/progressService';
 import { WORD_LISTS } from './constants';
-import { QuizQuestion, GameState } from './types';
-import { Loader2, RefreshCw, Check, AlertCircle, Edit3, BookOpen, Eye, EyeOff, SlidersHorizontal, Eraser } from 'lucide-react';
+import { QuizQuestion, GameState, QuizResult } from './types';
+import ProgressDashboard from './components/ProgressDashboard';
+import { Loader2, RefreshCw, Check, AlertCircle, Edit3, BookOpen, Eye, EyeOff, SlidersHorizontal, Eraser, BarChart2 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.IDLE);
@@ -114,6 +118,39 @@ const App: React.FC = () => {
     setGameState(GameState.REVIEW);
     setActiveQuestionId(null);
     setShowWordBank(true); // Always show word bank in review to see what was available
+    
+    // Save Result
+    const listName = selectedListId === 'custom' 
+      ? '自訂列表' 
+      : WORD_LISTS.find(l => l.id === selectedListId)?.name || '未知列表';
+      
+    const result: QuizResult = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      score: correctCount,
+      total: questions.length,
+      wordListId: selectedListId || 'custom',
+      wordListName: listName
+    };
+    saveQuizResult(result);
+
+    // Celebration for high scores
+    if (correctCount === questions.length) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#2563eb', '#10b981', '#f59e0b']
+      });
+    } else if (correctCount >= questions.length * 0.8) {
+      confetti({
+        particleCount: 80,
+        spread: 50,
+        origin: { y: 0.7 },
+        colors: ['#3b82f6', '#10b981']
+      });
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -127,10 +164,36 @@ const App: React.FC = () => {
       <Header />
 
       <main className="flex-grow container mx-auto px-4 py-6 max-w-6xl">
-        
-        {gameState === GameState.IDLE && (
-          <div className="flex flex-col items-center justify-center min-h-[70vh] py-10">
-            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-2xl w-full border border-slate-100">
+        <AnimatePresence mode="wait">
+          {gameState === GameState.PROGRESS && (
+            <motion.div
+              key="progress"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <ProgressDashboard onBack={() => setGameState(GameState.IDLE)} />
+            </motion.div>
+          )}
+
+          {gameState === GameState.IDLE && (
+            <motion.div 
+              key="idle"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex flex-col items-center justify-center min-h-[70vh] py-10"
+            >
+              <div className="w-full max-w-2xl flex justify-end mb-4">
+                 <button 
+                   onClick={() => setGameState(GameState.PROGRESS)}
+                   className="flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100"
+                 >
+                   <BarChart2 className="w-5 h-5" />
+                   查看學習進度
+                 </button>
+              </div>
+              <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-2xl w-full border border-slate-100">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                  <span className="text-3xl">📝</span>
               </div>
@@ -255,21 +318,32 @@ const App: React.FC = () => {
                 開始生成測驗
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {gameState === GameState.LOADING && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+          <motion.div 
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center min-h-[60vh] space-y-4"
+          >
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
             <h3 className="text-xl font-medium text-slate-700 animate-pulse">
               老師正在出題中，請稍候...
             </h3>
             <p className="text-slate-400 text-sm">正在運用 AI 根據您的詞彙表生成 {questionCount} 道情境題</p>
-          </div>
+          </motion.div>
         )}
 
         {gameState === GameState.ERROR && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+          <motion.div 
+            key="error"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center min-h-[60vh] space-y-4"
+          >
             <div className="bg-red-100 p-4 rounded-full">
                 <AlertCircle className="w-10 h-10 text-red-600" />
             </div>
@@ -281,18 +355,32 @@ const App: React.FC = () => {
             >
                 返回首頁
             </button>
-          </div>
+          </motion.div>
         )}
 
         {(gameState === GameState.PLAYING || gameState === GameState.REVIEW) && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <motion.div 
+            key="playing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+          >
             <div className={`${showWordBank ? 'lg:col-span-8' : 'lg:col-span-12'} order-2 lg:order-1 pb-32 lg:pb-0 transition-all duration-300`}>
               {gameState === GameState.REVIEW && (
-                <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center animate-in fade-in slide-in-from-top-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center"
+                >
                    <p className="text-slate-500 font-medium uppercase tracking-widest text-xs mb-2">測驗結果</p>
-                   <div className="text-5xl font-black text-blue-600 mb-2">
+                   <motion.div 
+                    initial={{ scale: 0.5 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                    className="text-5xl font-black text-blue-600 mb-2"
+                   >
                      {score} <span className="text-2xl text-slate-400 font-normal">/ {totalQuestions}</span>
-                   </div>
+                   </motion.div>
                    <p className="text-slate-600">
                      {score === totalQuestions ? "太棒了！全對！🎉" : score >= (totalQuestions * 0.8) ? "表現很棒！繼續保持！🌟" : "再接再厲，多練習幾次就會了！💪"}
                    </p>
@@ -303,7 +391,7 @@ const App: React.FC = () => {
                      <RefreshCw className="w-4 h-4" />
                      試試其他題目
                    </button>
-                </div>
+                </motion.div>
               )}
 
               <div className="flex items-center justify-between mb-4 px-2">
@@ -394,8 +482,9 @@ const App: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </main>
 
       {gameState === GameState.PLAYING && (
