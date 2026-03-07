@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { QuizQuestion } from "../types";
+import { QuizQuestion, Difficulty } from "../types";
 
 // Helper to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -11,12 +11,22 @@ function shuffleArray<T>(array: T[]): T[] {
   return newArray;
 }
 
-export const generateQuizQuestions = async (words: string[], count: number = 20): Promise<QuizQuestion[]> => {
+export const generateQuizQuestions = async (
+  words: string[], 
+  count: number = 20, 
+  difficulty: Difficulty = Difficulty.MEDIUM
+): Promise<QuizQuestion[]> => {
   if (!process.env.API_KEY) {
     throw new Error("API Key is missing");
   }
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  const difficultyDesc = {
+    [Difficulty.EASY]: "Simple and straightforward sentences. Use common daily life vocabulary. The context should be very clear and easy to understand.",
+    [Difficulty.MEDIUM]: "Moderate complexity. Suitable for Grade 6 level. Sentences may include more descriptive language and varied contexts.",
+    [Difficulty.HARD]: "Challenging sentences. Use more formal or literary language. The context may require deeper understanding of the word's nuances or metaphorical uses."
+  }[difficulty];
 
   const prompt = `
     Act as a professional primary school Chinese teacher.
@@ -30,7 +40,8 @@ export const generateQuizQuestions = async (words: string[], count: number = 20)
        - If there are fewer words than questions, you MUST reuse words to reach exactly ${count} questions.
        - If there are more words than questions, select the most appropriate ones, but prioritize using as many unique words from the list as possible.
     3. Context: Daily life scenarios or student experiences.
-    4. Difficulty: Moderate (Grade 6 level).
+    4. Difficulty Level: ${difficulty}. 
+       Description: ${difficultyDesc}
     5. Output Format: A JSON array.
     6. For each question, provide a brief explanation (in Traditional Chinese) suitable for a 6th grader. The explanation should clarify why the answer is correct based on the context or meaning of the word.
     

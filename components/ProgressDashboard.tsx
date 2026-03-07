@@ -20,6 +20,7 @@ interface ProgressDashboardProps {
   onBack: () => void;
 }
 
+// Progress Dashboard component
 const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ onBack }) => {
   const history = useMemo(() => getQuizHistory(), []);
   const mastery = useMemo(() => getMasteryStats(), []);

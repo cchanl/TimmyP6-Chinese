@@ -5,9 +5,16 @@ export interface QuizQuestion {
   explanation: string;
 }
 
+export enum Difficulty {
+  EASY = 'EASY',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD'
+}
+
 export interface QuizConfig {
   wordList: string[];
   questionCount: number;
+  difficulty: Difficulty;
 }
 
 export interface QuizResult {

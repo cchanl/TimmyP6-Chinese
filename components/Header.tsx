@@ -2,6 +2,7 @@ import React from 'react';
 import { GraduationCap } from 'lucide-react';
 import { APP_TITLE, APP_SUBTITLE } from '../constants';
 
+// Header component
 const Header: React.FC = () => {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-20 border-b border-slate-200">

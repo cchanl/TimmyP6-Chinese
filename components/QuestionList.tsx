@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { QuizQuestion, GameState } from '../types';
 import { CheckCircle, XCircle, Lightbulb } from 'lucide-react';
 

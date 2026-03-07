@@ -50,10 +50,10 @@ export const WORD_LISTS = [
   },
   {
     id: 'emotions',
-    name: '成語6',
-    description: '肆無忌憚 墨守成規...',
+    name: '成語1',
+    description: '玉石俱焚 旗鼓相當...',
     words: [
-      "肆無忌憚", "墨守成規", "廢寢忘食", "興風作浪", "鍥而不捨"
+      "玉石俱焚", "刮目相看", "南轅北轍", "唇亡齒寒", "推心置腹"
     ]
   },
   {

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import Header from './components/Header';
 import QuestionList from './components/QuestionList';
@@ -7,7 +7,7 @@ import WordBank from './components/WordBank';
 import { generateQuizQuestions } from './services/geminiService';
 import { saveQuizResult } from './services/progressService';
 import { WORD_LISTS } from './constants';
-import { QuizQuestion, GameState, QuizResult } from './types';
+import { QuizQuestion, GameState, QuizResult, Difficulty } from './types';
 import ProgressDashboard from './components/ProgressDashboard';
 import { Loader2, RefreshCw, Check, AlertCircle, Edit3, BookOpen, Eye, EyeOff, SlidersHorizontal, Eraser, BarChart2 } from 'lucide-react';
 
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [customWordsInput, setCustomWordsInput] = useState<string>(WORD_LISTS[0].words.join('、'));
   const [currentWordList, setCurrentWordList] = useState<string[]>([]);
   const [questionCount, setQuestionCount] = useState<number>(20);
+  const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.MEDIUM);
 
   // Initialize Quiz
   const startQuiz = useCallback(async () => {
@@ -46,7 +47,7 @@ const App: React.FC = () => {
     setShowWordBank(true);
     
     try {
-      const generatedQuestions = await generateQuizQuestions(words, questionCount);
+      const generatedQuestions = await generateQuizQuestions(words, questionCount, difficulty);
       setQuestions(generatedQuestions);
       setUserAnswers({});
       setScore(0);
@@ -308,6 +309,34 @@ const App: React.FC = () => {
                       <span>5 題</span>
                       <span>30 題</span>
                   </div>
+              </div>
+
+              {/* Difficulty Setting */}
+              <div className="mb-8 p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+                  <label className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4">
+                      <SlidersHorizontal className="w-4 h-4 text-slate-500" />
+                      設定難易度
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                      {(Object.keys(Difficulty) as Array<keyof typeof Difficulty>).map((key) => (
+                          <button
+                              key={key}
+                              onClick={() => setDifficulty(Difficulty[key])}
+                              className={`py-2 px-3 rounded-lg text-sm font-bold transition-all border ${
+                                  difficulty === Difficulty[key]
+                                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                              }`}
+                          >
+                              {key === 'EASY' ? '基礎' : key === 'MEDIUM' ? '進階' : '挑戰'}
+                          </button>
+                      ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-3 text-center">
+                      {difficulty === Difficulty.EASY ? '適合初學者，句子簡單直白' : 
+                       difficulty === Difficulty.MEDIUM ? '適合一般練習，符合六年級程度' : 
+                       '適合追求卓越，句子更具文學性與深度'}
+                  </p>
               </div>
 
               <button 
