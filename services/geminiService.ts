@@ -1,4 +1,3 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { QuizQuestion, Difficulty } from "../types";
 
 // Helper to shuffle array
@@ -16,63 +15,25 @@ export const generateQuizQuestions = async (
   count: number = 20, 
   difficulty: Difficulty = Difficulty.MEDIUM
 ): Promise<QuizQuestion[]> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API Key is missing");
-  }
-
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-  const difficultyDesc = {
-    [Difficulty.EASY]: "Simple and straightforward sentences. Use common daily life vocabulary. The context should be very clear and easy to understand.",
-    [Difficulty.MEDIUM]: "Moderate complexity. Suitable for Grade 6 level. Sentences may include more descriptive language and varied contexts.",
-    [Difficulty.HARD]: "Challenging sentences. Use more formal or literary language. The context may require deeper understanding of the word's nuances or metaphorical uses."
-  }[difficulty];
-
-  const prompt = `
-    Act as a professional primary school Chinese teacher.
-    
-    Task: Design a fill-in-the-blank vocabulary quiz.
-    Target Audience: 6th-grade students (approx. 11-12 years old).
-    
-    Requirements:
-    1. Use the following list of words: ${words.join(", ")}.
-    2. Generate exactly ${count} questions. 
-       - If there are fewer words than questions, you MUST reuse words to reach exactly ${count} questions.
-       - If there are more words than questions, select the most appropriate ones, but prioritize using as many unique words from the list as possible.
-    3. Context: Daily life scenarios or student experiences.
-    4. Difficulty Level: ${difficulty}. 
-       Description: ${difficultyDesc}
-    5. Output Format: A JSON array.
-    6. For each question, provide a brief explanation (in Traditional Chinese) suitable for a 6th grader. The explanation should clarify why the answer is correct based on the context or meaning of the word.
-    
-    The sentence should be split into two parts: 'before' the blank and 'after' the blank.
-    The 'answer' must be one of the words from the provided list.
-  `;
-
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              id: { type: Type.INTEGER },
-              part1: { type: Type.STRING, description: "Text before the blank" },
-              part2: { type: Type.STRING, description: "Text after the blank" },
-              answer: { type: Type.STRING, description: "The correct word from the list" },
-              explanation: { type: Type.STRING, description: "Explanation why this word fits the context" },
-            },
-            required: ["id", "part1", "part2", "answer", "explanation"],
-          },
-        },
+    const response = await fetch("/api/generate-quiz", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        words,
+        count,
+        difficulty,
+      }),
     });
 
-    const rawData = JSON.parse(response.text || "[]");
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error || "Failed to generate quiz from backend");
+    }
+
+    const rawData = await response.json();
 
     // Shuffle the generated questions so they don't follow the word list order
     const shuffledData = shuffleArray(rawData);
@@ -85,8 +46,8 @@ export const generateQuizQuestions = async (
       explanation: item.explanation,
     }));
 
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    throw new Error("Failed to generate quiz. Please try again.");
+  } catch (error: any) {
+    console.error("Gemini service client-side proxy error:", error);
+    throw new Error(error?.message || "Failed to generate quiz. Please try again.");
   }
 };
